@@ -1,5 +1,5 @@
 /* ============================================================
-   TASKNEXUS — AI IMAGE GENERATOR (ModelsLab Flux-Klein)
+   TASKNEXUS — AI IMAGE GENERATOR (ModelsLab Advanced)
    ============================================================ */
 
 const AIGen = (() => {
@@ -10,13 +10,29 @@ const AIGen = (() => {
     panel.innerHTML = `
       <div class="panel-header">
         <h2 class="panel-title">AI Image Generator</h2>
-        <p class="panel-desc">Generate stunning images using the ModelsLab Flux-Klein model.</p>
+        <p class="panel-desc">Create high-end visuals with advanced ModelsLab models like Flux-Klein and Qwen.</p>
       </div>
 
       <div class="card">
         <div class="form-group">
           <label class="form-label">Prompt</label>
-          <textarea id="ai-prompt" class="form-textarea" placeholder="Describe the image you want to generate..."></textarea>
+          <textarea id="ai-prompt" class="form-textarea" placeholder="e.g. high-end product photography of a luxury watch on a dark reflective surface..."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Model</label>
+            <select id="ai-model" class="form-select">
+              <option value="qwen" selected>Qwen (Product/Photo)</option>
+              <option value="flux-klein">Flux-Klein (Creative/Art)</option>
+              <option value="midjourney">Midjourney v6</option>
+              <option value="stable-diffusion-xl">SDXL</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Samples (1-2)</label>
+            <input type="number" id="ai-samples" class="form-input" value="1" min="1" max="2">
+          </div>
         </div>
 
         <div class="grid-2">
@@ -25,9 +41,10 @@ const AIGen = (() => {
             <select id="ai-width" class="form-select">
               <option value="512">512</option>
               <option value="768">768</option>
-              <option value="1024" selected>1024</option>
+              <option value="1024">1024</option>
               <option value="1280">1280</option>
               <option value="1488">1488</option>
+              <option value="2024" selected>2024</option>
             </select>
           </div>
           <div class="form-group">
@@ -35,16 +52,23 @@ const AIGen = (() => {
             <select id="ai-height" class="form-select">
               <option value="512">512</option>
               <option value="768">768</option>
-              <option value="1024" selected>1024</option>
+              <option value="1024">1024</option>
               <option value="1280">1280</option>
               <option value="1488">1488</option>
+              <option value="2024" selected>2024</option>
             </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Samples (1-2)</label>
-          <input type="number" id="ai-samples" class="form-input" value="1" min="1" max="2">
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Inference Steps</label>
+            <input type="number" id="ai-steps" class="form-input" value="20" min="1" max="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Guidance Scale</label>
+            <input type="number" id="ai-guidance" class="form-input" value="7.5" step="0.5" min="1" max="20">
+          </div>
         </div>
 
         <button id="ai-generate-btn" class="btn btn-primary btn-pill" style="width: 100%; margin-top: 10px;">
@@ -71,9 +95,12 @@ const AIGen = (() => {
     if (isGenerating) return;
 
     const prompt = document.getElementById('ai-prompt').value.trim();
+    const model = document.getElementById('ai-model').value;
     const width = document.getElementById('ai-width').value;
     const height = document.getElementById('ai-height').value;
     const samples = document.getElementById('ai-samples').value;
+    const steps = document.getElementById('ai-steps').value;
+    const guidance = document.getElementById('ai-guidance').value;
     const apiKey = window.ENV.MODELSLAB_API_KEY;
 
     if (!prompt) {
@@ -100,11 +127,13 @@ const AIGen = (() => {
         },
         body: JSON.stringify({
           "key": apiKey,
-          "model_id": "flux-klein",
+          "model_id": model,
           "prompt": prompt,
           "width": width,
           "height": height,
-          "samples": samples
+          "samples": samples,
+          "num_inference_steps": steps,
+          "guidance_scale": guidance
         })
       });
 
@@ -128,7 +157,6 @@ const AIGen = (() => {
         } else if (data.status === 'processing') {
           container.innerHTML = `<p class="panel-desc">Image is being generated. This might take a minute. Please check back shortly.</p>`;
           if (data.fetch_result) {
-              // Optionally poll for result using data.fetch_result URL
               pollForResult(data.fetch_result);
           }
         }
@@ -146,7 +174,7 @@ const AIGen = (() => {
   async function pollForResult(fetchUrl) {
       const container = document.getElementById('ai-image-container');
       let attempts = 0;
-      const maxAttempts = 20;
+      const maxAttempts = 30; // Increased for higher resolution
       
       const interval = setInterval(async () => {
           attempts++;
