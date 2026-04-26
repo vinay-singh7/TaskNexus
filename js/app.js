@@ -31,6 +31,30 @@ const hash = window.location.hash.replace('#','');
 if (hash && TOOL_NAMES[hash]) navigate(hash);
 else navigate('dashboard');
 
+/* ── Sidebar Toggle (Mobile) ── */
+const menuBtn = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+if (menuBtn && sidebar) {
+  menuBtn.onclick = (e) => {
+    e.stopPropagation();
+    sidebar.classList.toggle('open');
+  };
+  // Close sidebar when clicking a nav item on mobile
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768) sidebar.classList.remove('open');
+    });
+  });
+  // Close sidebar when clicking outside on mobile
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
+      if (!sidebar.contains(e.target) && e.target !== menuBtn) {
+        sidebar.classList.remove('open');
+      }
+    }
+  });
+}
+
 // ---- Storage ----
 const Store = {
   get(key, fallback = null) {
