@@ -5,7 +5,7 @@ const TOOL_NAMES = {
   converter:'Unit Converter', qrcode:'QR Generator',
   texttools:'Text Tools', devtools:'Dev Tools', datatesting:'Data Testing', rsstools:'RSS Feeds',
   generators:'Generators', seo:'SEO Tools', datetime:'Date & Time', network:'Network Tools', pdftools:'PDF Tools',
-  codeeditor: 'Code Editor', aigen: 'AI Image Generator'
+  codeeditor: 'Code Editor'
 };
 
 // ---- Router ----
