@@ -88,7 +88,13 @@ const AIGen = (() => {
     `;
 
     // Reverting to the GET API as it is the most reliable for browser environments (no CORS issues)
-    const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${model}&seed=${seed}&nologo=true&enhance=true`;
+    const apiKey = window.ENV.POLLINATIONS_API_KEY;
+    let imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=${width}&height=${height}&model=${model}&seed=${seed}&nologo=true&enhance=true`;
+    
+    // Add API key if available
+    if (apiKey && !apiKey.startsWith('your_')) {
+      imgUrl += `&api_key=${apiKey}`;
+    }
     
     const img = new Image();
     img.onload = () => {
