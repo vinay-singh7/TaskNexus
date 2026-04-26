@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskNexus — All-in-One Productivity Toolkit</title>
+  <meta name="description"
+    content="TaskNexus is your all-in-one productivity hub — notes, tasks, tools, and more in one stunning interface." />
+  <link rel="preconnect" href="https://api.fontshare.com" />
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800,700&f[]=satoshi@400,500,700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="css/landing.css" />
+  <script src="js/auth.js"></script>
+  <!-- Initialize Clerk silently for the landing page -->
+  <script>
+    window.addEventListener('load', async () => {
+      await Auth.initClerk(window.ENV.CLERK_PUBLISHABLE_KEY);
+      
+      const clerk = Auth.getClerk();
+      const isLoggedIn = clerk && clerk.user;
+      
+      // Update CTAs based on login state
+      document.querySelectorAll('.auth-cta').forEach(el => {
+        if (isLoggedIn) {
+          el.textContent = 'Go to App →';
+          el.href = 'app.html';
+          el.onclick = null; // Remove any onclick handlers
+        } else {
+          el.textContent = el.dataset.loggedOutText || 'Sign In →';
+          el.href = 'javascript:void(0)';
+          el.onclick = (e) => {
+            e.preventDefault();
+            window.location.href = 'login.html';
+          };
+        }
+      });
+    });
+  </script>
+  <script src="config.js"></script>
+  <script>
+    document.write(`<script crossorigin="anonymous" data-clerk-publishable-key="${window.ENV.CLERK_PUBLISHABLE_KEY}" src="${window.ENV.CLERK_JS_URL}" type="text/javascript"><\\/script>`);
+  </script>
+</head>
+
+<body>
+
+  <!-- ===================== LAYER 1: HERO CONTENT ===================== -->
+  <div class="vibrant-bg"></div>
+
+  <div id="hero-content" aria-hidden="true">
+
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-container">
+        <div class="logo-circle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polygon
+              points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" />
+          </svg>
+        </div>
+        <span class="logo-text">TaskNexus</span>
+      </div>
+      <nav>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#whats-new">What's New</a></li>
+          <li><a href="#contact">Contact</a></li>
+          <li><a href="login.html" class="nav-cta auth-cta" data-logged-out-text="Sign In →">Sign In →</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <main class="hero-section">
+      <div class="hero-grid">
+
+        <!-- Left Column -->
+        <div class="hero-left">
+          <p class="hero-eyebrow">✦ All-in-One Productivity Hub</p>
+          <h1 class="hero-title">
+            Everything<br />
+            <span class="line-2">You Need.</span>
+          </h1>
+          <p class="hero-description">
+            One unified workspace for notes, tasks, dashboard, dev tools, budget tracking, timers, QR codes, image
+            processing, and more. Now with <b>global search</b>, <b>keyboard shortcuts</b>, and a beautiful <b>command
+              dashboard</b>.
+          </p>
+          <div class="hero-buttons">
+            <a href="login.html" id="cta-launch" class="btn-primary auth-cta" data-logged-out-text="Get Started Free">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                stroke-linecap="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+              Get Started Free
+            </a>
+            <button class="btn-secondary"
+              onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">
+              See All 21 Tools
+            </button>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><span class="stat-num">21</span><span class="stat-lbl">Tools</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat"><span class="stat-num">∞</span><span class="stat-lbl">Private</span></div>
+            <div class="stat-divider"></div>
+            <div class="stat"><span class="stat-num">0</span><span class="stat-lbl">Accounts needed</span></div>
+          </div>
+        </div>
+
+        <!-- Right Column — Glassmorphic Card -->
+        <div class="hero-right">
+          <div class="ambient-light ambient-yellow"></div>
+          <div class="ambient-light ambient-pink"></div>
+          <div class="glass-card" id="glass-card">
+            <div class="card-top">
+              <p class="card-label">// toolkit.v1.0</p>
+              <h2 class="card-title">Your Toolkit</h2>
+            </div>
+            <div class="tool-grid">
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(16,185,129,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div><span
+                  class="tool-name">Dashboard</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(79,70,229,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div><span
+                  class="tool-name">Notes</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(124,58,237,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div><span
+                  class="tool-name">To-Do</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(245,158,11,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div><span
+                  class="tool-name">Timer</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(219,39,119,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div><span
+                  class="tool-name">Budget</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(16,185,129,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div><span class="tool-name">Dev
+                  Tools</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(59,130,246,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg></div><span class="tool-name">QR
+                  Code</span>
+              </div>
+              <div class="tool-item">
+                <div class="tool-icon" style="background:rgba(239,68,68,0.3)"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div><span
+                  class="tool-name">Images</span>
+              </div>
+            </div>
+            <div class="card-footer">
+              <div class="card-stat"><div class="stat-number">Local</div><div class="stat-label">First</div></div>
+              <div class="card-stat"><div class="stat-number">Free</div><div class="stat-label">Forever</div></div>
+              <div class="card-stat"><div class="stat-number">Fast</div><div class="stat-label">Local Storage</div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- Features Section -->
+    <section id="features" class="features-section">
+      <div class="features-inner">
+        <p class="section-eyebrow">✦ Every tool you need</p>
+        <h2 class="section-title">Built for real work.</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+            <h3>Smart Notes</h3>
+            <p>Rich text notes with color labels, pinning, and instant search. Auto-saved locally.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>
+            <h3>To-Do & Tasks</h3>
+            <p>Priority levels, due dates, subtasks, and progress tracking with streaks.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+            <h3>Reminders</h3>
+            <p>One-time and recurring browser notifications that actually work.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+            <h3>Timer Suite</h3>
+            <p>Stopwatch, countdown timer, and Pomodoro with visual ring progress.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg></div>
+            <h3>Calculator</h3>
+            <p>Standard, scientific, and expression evaluator with history log.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></div>
+            <h3>Unit Converter</h3>
+            <p>Length, weight, temperature, volume, speed, and data units.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+            <h3>Budget Tracker</h3>
+            <p>Income/expense tracking with charts, categories, and CSV export.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></div>
+            <h3>Quick Links</h3>
+            <p>Save, tag, and launch your most-used URLs with favicon previews.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg></div>
+            <h3>QR Generator</h3>
+            <p>Password-protected QR codes for URLs, text, vCards, WiFi, and files.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></div>
+            <h3>Image Tools</h3>
+            <p>Convert, resize, and compress images entirely in your browser.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg></div>
+            <h3>Text Tools</h3>
+            <p>Case converter, Markdown→HTML, word count, diff, URL/HTML encoding.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div>
+            <h3>Dev Tools</h3>
+            <p>JSON formatter, Base64, color picker, regex tester, UUID & hash generators.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><line x1="5.52" y1="16" x2="18.48" y2="16"></line></svg></div>
+            <h3>Data Testing</h3>
+            <p>JSON schema validator, CSV parser, lorem ipsum, fake data, timestamp converter.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></div>
+            <h3>RSS Feed Reader</h3>
+            <p>Add feeds, browse articles, and manage your reading list—all in one place.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
+            <h3>Generators</h3>
+            <p>Generate highly secure passwords and bulk UUIDs with advanced filters.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+            <h3>Date & Time</h3>
+            <p>Calculate exact time differences and do complex calendar math instantly.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M2 12h4l2-9 5 18 2-9h5"></path></svg></div>
+            <h3>SEO Tools</h3>
+            <p>Build and preview standard meta tags, Open Graph, and Twitter Social cards.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>
+            <h3>Network Utilities</h3>
+            <p>Find your public IP, parse browser fingerprints, and safely encode URLs.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+            <h3>PDF Tools</h3>
+            <p>100% local PDF manipulation. Merge, extract pages, and convert images to PDF.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></div>
+            <h3>Online Code Editor</h3>
+            <p>A fast, syntax-highlighted code editor powered by the VS Code engine (Monaco).</p>
+          </div>
+        </div>
+        <div class="features-cta">
+          <a href="login.html" class="btn-primary btn-large auth-cta" data-logged-out-text="Start Using TaskNexus →">Start Using TaskNexus →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== WHAT'S NEW ===== -->
+    <section id="whats-new" class="features-section" style="padding-top:0">
+      <div class="features-inner">
+        <p class="section-eyebrow">✶ Latest Updates</p>
+        <h2 class="section-title">What's New</h2>
+        <div class="features-grid" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+          <div class="feature-card" style="border-color:rgba(79,70,229,0.4);background:rgba(79,70,229,0.06)">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+            <h3>Dashboard</h3>
+            <p>Brand new command center showing live stats, urgent tasks, upcoming reminders, recent notes, and budget
+              snapshot in one view.</p>
+            <span
+              style="display:inline-block;margin-top:10px;font-size:.72rem;font-weight:700;color:#a5b4fc;background:rgba(79,70,229,.15);border:1px solid rgba(79,70,229,.3);padding:3px 10px;border-radius:20px"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon></svg>
+              New</span>
+          </div>
+          <div class="feature-card" style="border-color:rgba(16,185,129,0.4);background:rgba(16,185,129,0.05)">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></div>
+            <h3>Global Search</h3>
+            <p>Press <kbd
+                style="background:rgba(255,255,255,.1);padding:1px 7px;border-radius:5px;font-family:monospace">Ctrl+K</kbd>
+              to search across all tools — notes, tasks, reminders, budget, links.</p>
+            <span
+              style="display:inline-block;margin-top:10px;font-size:.72rem;font-weight:700;color:#6ee7b7;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);padding:3px 10px;border-radius:20px"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon></svg>
+              New</span>
+          </div>
+          <div class="feature-card" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05)">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></div>
+            <h3>Enhanced To-Do</h3>
+            <p>Categories, inline editing, task notes, overdue highlighting, bulk clear, and live sidebar badge showing
+              pending count.</p>
+            <span
+              style="display:inline-block;margin-top:10px;font-size:.72rem;font-weight:700;color:#fcd34d;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px">⬆
+              Upgraded</span>
+          </div>
+          <div class="feature-card" style="border-color:rgba(219,39,119,0.4);background:rgba(219,39,119,0.05)">
+            <div class="feat-icon"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+            <h3>Notes Export</h3>
+            <p>Live word &amp; character count while writing, plus one-click export any note as a .txt file.</p>
+            <span
+              style="display:inline-block;margin-top:10px;font-size:.72rem;font-weight:700;color:#f9a8d4;background:rgba(219,39,119,.15);border:1px solid rgba(219,39,119,.3);padding:3px 10px;border-radius:20px">⬆
+              Upgraded</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CONTACT ===== -->
+    <section id="contact" class="features-section" style="padding-top:0">
+      <div class="features-inner" style="max-width:640px">
+        <p class="section-eyebrow">✶ Get in Touch</p>
+        <h2 class="section-title">Contact Us</h2>
+        <p style="color:var(--text-2,#a0aec0);text-align:center;margin-bottom:2rem;font-size:.95rem">Found a bug? Have a
+          feature request? We’d love to hear from you.</p>
+        <form id="contact-form" action="https://formspree.io/f/xbdqbdvp" method="POST"
+          style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:2rem;display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label
+                style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em">Your
+                Name</label>
+              <input type="text" name="name" required placeholder="e.g. Arjun Sharma"
+                style="width:100%;padding:11px 14px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f0f0f0;font-size:.9rem;outline:none;box-sizing:border-box"
+                onfocus="this.style.borderColor='rgba(79,70,229,0.6)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+            </div>
+            <div>
+              <label
+                style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em">Email
+                Address</label>
+              <input type="email" name="email" required placeholder="you@example.com"
+                style="width:100%;padding:11px 14px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f0f0f0;font-size:.9rem;outline:none;box-sizing:border-box"
+                onfocus="this.style.borderColor='rgba(79,70,229,0.6)'"
+                onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+            </div>
+          </div>
+          <div>
+            <label
+              style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em">Topic</label>
+            <select name="topic"
+              style="width:100%;padding:11px 14px;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f0f0f0;font-size:.9rem;outline:none">
+              <option value="Bug Report"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px;margin-top:-2px"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2Z"></path><path d="m9 9 6 6"></path><path d="m15 9-6 6"></path></svg> Bug Report</option>
+              <option value="Feature Request"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px;margin-top:-2px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26"></polygon></svg> Feature Request</option>
+              <option value="General Inquiry"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px;margin-top:-2px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> General Inquiry</option>
+              <option value="Other"><svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle;margin-right:2px;margin-top:-2px"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> Other</option>
+            </select>
+          </div>
+          <div>
+            <label
+              style="display:block;font-size:.78rem;font-weight:700;margin-bottom:6px;color:#a0aec0;text-transform:uppercase;letter-spacing:.06em">Message</label>
+            <textarea name="message" required rows="5" placeholder="Describe your issue or idea in detail…"
+              style="width:100%;padding:11px 14px;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f0f0f0;font-size:.9rem;outline:none;resize:vertical;font-family:inherit;box-sizing:border-box"
+              onfocus="this.style.borderColor='rgba(79,70,229,0.6)'"
+              onblur="this.style.borderColor='rgba(255,255,255,0.1)'"></textarea>
+          </div>
+          <button type="submit"
+            style="padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;font-size:1rem;font-weight:700;cursor:pointer;letter-spacing:.02em;transition:opacity .2s"
+            onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">Send Message →</button>
+          <div id="contact-sent" style="display:none;text-align:center;color:#86efac;font-weight:600">✓ Message sent!
+            We’ll get back to you soon.</div>
+        </form>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <p>TaskNexus &mdash; Built with <svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="#ef4444" style="vertical-align:middle;color:#ef4444;margin:0 2px;margin-top:-2px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg> &middot; No tracking &middot; 100% local &middot; <a href="#contact"
+          style="color:#a5b4fc;text-decoration:none">Contact Us</a></p>
+    </footer>
+
+  </div><!-- end #hero-content -->
+
+
+  <!-- ===================== LAYER 2: SVG CURTAIN ===================== -->
+  <div id="curtain">
+    <svg id="curtain-svg" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+      <defs>
+        <mask id="m">
+          <rect width="100%" height="100%" fill="white" />
+          <g id="mask-group">
+            <text id="mask-text" x="50%" y="52%" text-anchor="middle" dominant-baseline="middle"
+              font-family="'Cabinet Grotesk', sans-serif" font-weight="900" font-size="15vw" fill="black"
+              letter-spacing="-0.05em">NEXUS</text>
+          </g>
+        </mask>
+      </defs>
+      <rect id="curtain-rect" width="100%" height="100%" fill="#050505" mask="url(#m)" />
+    </svg>
+  </div>
+
+  <!-- ===================== LAYER 3: INTRO UI ===================== -->
+  <div id="intro-ui">
+    <div class="intro-inner">
+      <div class="title-lockup">
+        <h1 class="intro-title">Task<span>Nexus</span></h1>
+        <p class="intro-sub">All-in-One Productivity Toolkit</p>
+      </div>
+      <div class="scroll-hint">
+        <div class="mouse-icon">
+          <div class="mouse-wheel"></div>
+        </div>
+        <p class="scroll-label">Scroll to unveil</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PROGRESS BAR ===================== -->
+  <div id="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div id="progress-fill"></div>
+  </div>
+
+  <script src="js/landing.js"></script>
+</body>
+
+</html>

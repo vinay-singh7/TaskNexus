@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TaskNexus — App</title>
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800,700&f[]=satoshi@400,500,700,800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="css/app.css"/>
+<!-- Clerk Auth -->
+<script src="js/auth.js"></script>
+<script>
+  // Block page rendering until auth finishes
+  document.documentElement.style.display = 'none';
+  window.addEventListener('load', async () => {
+    await Auth.initClerk(window.ENV.CLERK_PUBLISHABLE_KEY);
+    if (!Auth.requireAuth()) return; // redirects if not logged in
+    document.documentElement.style.display = ''; // Show page
+    
+    // Mount Clerk User Button in Topbar
+    const clerk = Auth.getClerk();
+    if (clerk && clerk.user) {
+      clerk.mountUserButton(document.getElementById('user-button'), {
+        afterSignOutUrl: window.location.href.split('app.html')[0] + 'login.html'
+      });
+    }
+    
+    // Dispatch an event to signal that Auth is ready for the rest of the tools
+    window.dispatchEvent(new Event('auth-ready'));
+  });
+</script>
+<script src="config.js"></script>
+<script>
+  document.write(`<script crossorigin="anonymous" data-clerk-publishable-key="${window.ENV.CLERK_PUBLISHABLE_KEY}" src="${window.ENV.CLERK_JS_URL}" type="text/javascript"><\\/script>`);
+</script>
+
+</head>
+<body>
+<!-- Animated gradient + ambient glows -->
+<div class="vibrant-bg"></div>
+<div class="orb orb-tl"></div>
+<div class="orb orb-br"></div>
+
+<div class="app-shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <a class="sidebar-logo" href="index.html">
+      <div class="sidebar-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>
+      </div>
+      <span class="sidebar-logo-name">TaskNexus</span>
+    </a>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-label">Overview</div>
+      <button class="nav-item" data-tool="dashboard"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>Dashboard</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Productivity</div>
+      <button class="nav-item" data-tool="notes"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>Notes</button>
+      <button class="nav-item" data-tool="todo"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg></span>To-Do <span id="badge-todo" style="display:none;background:rgba(239,68,68,.8);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:auto">0</span></button>
+      <button class="nav-item" data-tool="reminders"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg></span>Reminders <span id="badge-rem" style="display:none;background:rgba(245,158,11,.8);color:white;font-size:10px;font-weight:700;padding:1px 6px;border-radius:20px;margin-left:auto">0</span></button>
+      <button class="nav-item" data-tool="timer"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>Timer</button>
+      <button class="nav-item" data-tool="budget"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></span>Budget</button>
+      <button class="nav-item" data-tool="quicklinks"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></span>Quick Links</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Utilities</div>
+      <button class="nav-item" data-tool="calculator"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="8" y1="6" x2="16" y2="6"></line><line x1="16" y1="14" x2="16" y2="18"></line><path d="M16 10h.01"></path><path d="M12 10h.01"></path><path d="M8 10h.01"></path><path d="M12 14h.01"></path><path d="M8 14h.01"></path><path d="M12 18h.01"></path><path d="M8 18h.01"></path></svg></span>Calculator</button>
+      <button class="nav-item" data-tool="converter"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg></span>Unit Converter</button>
+      <button class="nav-item" data-tool="qrcode"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="3" height="3"></rect><rect x="14" y="7" width="3" height="3"></rect><rect x="7" y="14" width="3" height="3"></rect><rect x="14" y="14" width="3" height="3"></rect></svg></span>QR Generator</button>
+      <button class="nav-item" data-tool="generators"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></span>Generators</button>
+      <button class="nav-item" data-tool="datetime"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></span>Date & Time</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Tools</div>
+      <button class="nav-item" data-tool="imagetools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>Image Tools</button>
+      <button class="nav-item" data-tool="texttools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg></span>Text Tools</button>
+      <button class="nav-item" data-tool="devtools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>Dev Tools</button>
+      <button class="nav-item" data-tool="datatesting"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><line x1="5.52" y1="16" x2="18.48" y2="16"></line></svg></span>Data Testing</button>
+      <button class="nav-item" data-tool="rsstools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg></span>RSS Feeds</button>
+      <button class="nav-item" data-tool="seo"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M2 12h4l2-9 5 18 2-9h5"></path></svg></span>SEO Tools</button>
+      <button class="nav-item" data-tool="network"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>Network Tools</button>
+      <button class="nav-item" data-tool="pdftools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></span>PDF Tools</button>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-label">Coding Tools</div>
+      <button class="nav-item" data-tool="codeeditor"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>Code Editor</button>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div style="font-size:.65rem;color:var(--text-4);margin-bottom:6px;padding:0 4px">⌨ Press <b>Ctrl+K</b> to search</div>
+    <a class="back-to-home" href="index.html">← Home</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area">
+  <header class="topbar">
+    <span class="topbar-title" id="topbar-title">Notes</span>
+    <div class="topbar-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="global-search" placeholder="Search tools..."/>
+    </div>
+    <!-- User chip -->
+    <div id="user-button"></div>
+  </header>
+  <div class="tool-canvas" id="tool-canvas">
+
+    <!-- DASHBOARD -->
+    <div class="tool-panel" id="panel-dashboard"></div>
+    <!-- NOTES -->
+    <div class="tool-panel active" id="panel-notes"></div>
+    <!-- TODO -->
+    <div class="tool-panel" id="panel-todo"></div>
+    <!-- REMINDERS -->
+    <div class="tool-panel" id="panel-reminders"></div>
+    <!-- TIMER -->
+    <div class="tool-panel" id="panel-timer"></div>
+    <!-- BUDGET -->
+    <div class="tool-panel" id="panel-budget"></div>
+    <!-- QUICKLINKS -->
+    <div class="tool-panel" id="panel-quicklinks"></div>
+    <!-- CALCULATOR -->
+    <div class="tool-panel" id="panel-calculator"></div>
+    <!-- CONVERTER -->
+    <div class="tool-panel" id="panel-converter"></div>
+    <!-- QRCODE -->
+    <div class="tool-panel" id="panel-qrcode"></div>
+    <!-- IMAGETOOLS -->
+    <div class="tool-panel" id="panel-imagetools"></div>
+    <!-- TEXTTOOLS -->
+    <div class="tool-panel" id="panel-texttools"></div>
+    <!-- DEVTOOLS -->
+    <div class="tool-panel" id="panel-devtools"></div>
+    <!-- DATATESTING -->
+    <div class="tool-panel" id="panel-datatesting"></div>
+    <!-- RSSTOOLS -->
+    <div class="tool-panel" id="panel-rsstools"></div>
+    <!-- NEW TOOLS -->
+    <div class="tool-panel" id="panel-generators"></div>
+    <div class="tool-panel" id="panel-datetime"></div>
+    <div class="tool-panel" id="panel-seo"></div>
+    <div class="tool-panel" id="panel-network"></div>
+    <div class="tool-panel" id="panel-pdftools"></div>
+    <div class="tool-panel" id="panel-codeeditor"></div>
+
+  </div>
+</div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script src="js/app.js"></script>
+<script>
+  // Wait for auth to be ready before initializing tools that might rely on session
+  window.addEventListener('auth-ready', () => {
+    // App.js handles tool logic, but if tools need Auth.getSession(), it is now safe.
+  });
+</script>
+<script src="js/tools/dashboard.js"></script>
+<script src="js/tools/notes.js"></script>
+<script src="js/tools/todo.js"></script>
+<script src="js/tools/reminders.js"></script>
+<script src="js/tools/timer.js"></script>
+<script src="js/tools/budget.js"></script>
+<script src="js/tools/quicklinks.js"></script>
+<script src="js/tools/calculator.js"></script>
+<script src="js/tools/converter.js"></script>
+<script src="js/tools/qrcode.js"></script>
+<script src="js/tools/imagetools.js"></script>
+<script src="js/tools/texttools.js"></script>
+<script src="js/tools/devtools.js"></script>
+<script src="js/tools/datatesting.js"></script>
+<script src="js/tools/rsstools.js"></script>
+<script src="js/tools/generators.js"></script>
+<script src="js/tools/datetime.js"></script>
+<script src="js/tools/seo.js"></script>
+<script src="js/tools/network.js"></script>
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="js/tools/pdftools.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+<script src="js/tools/codeeditor.js"></script>
+</body>
+</html>

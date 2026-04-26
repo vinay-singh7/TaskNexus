@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In — TaskNexus</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/landing.css" />
+  <script src="js/auth.js"></script>
+  <style>
+    /* Center the Clerk component */
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Satoshi', sans-serif;
+      overflow: hidden;
+    }
+    
+    /* Soften the vibrant background for the login page */
+    .vibrant-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    .clerk-wrapper {
+      position: relative;
+      z-index: 10;
+      /* Optional: subtle glassmorphism backing if the clerk component needs more pop */
+    }
+    
+    .back-link {
+      position: absolute;
+      top: 30px;
+      left: 40px;
+      z-index: 20;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 8px 16px;
+      border-radius: 20px;
+      transition: background 0.2s;
+    }
+    .back-link:hover {
+      background: rgba(0, 0, 0, 0.4);
+    }
+  </style>
+
+  <script>
+    window.addEventListener('load', async () => {
+      await Auth.initClerk(window.ENV.CLERK_PUBLISHABLE_KEY);
+      
+      const clerk = Auth.getClerk();
+      if (clerk.user) {
+        // If already logged in, go straight to the app
+        window.location.replace('app.html');
+        return;
+      }
+
+      // Mount the Clerk Sign-In component locally
+      const signInDiv = document.getElementById('sign-in-container');
+      const appUrl = window.location.href.split('login.html')[0] + 'app.html';
+      
+      clerk.mountSignIn(signInDiv, {
+        routing: 'hash',
+        forceRedirectUrl: appUrl,
+        afterSignInUrl: appUrl,
+        signUpForceRedirectUrl: appUrl,
+        afterSignUpUrl: appUrl
+      });
+    });
+  </script>
+  <script src="config.js"></script>
+  <script>
+    document.write(`<script crossorigin="anonymous" data-clerk-publishable-key="${window.ENV.CLERK_PUBLISHABLE_KEY}" src="${window.ENV.CLERK_JS_URL}" type="text/javascript"><\\/script>`);
+  </script>
+</head>
+<body>
+  <!-- Animated background matching the landing page -->
+  <div class="vibrant-bg"></div>
+  
+  <a href="index.html" class="back-link">← Back to Home</a>
+
+  <!-- Container where Clerk will inject its UI -->
+  <div class="clerk-wrapper" id="sign-in-container"></div>
+
+</body>
+</html>

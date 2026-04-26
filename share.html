@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>TaskNexus — Shared File</title>
+<link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@900,800&f[]=satoshi@400,600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#050505;--primary:#4f46e5;--accent:#7c3aed;--ease:cubic-bezier(.77,0,.175,1)}
+html,body{min-height:100vh;background:var(--bg);color:#fff;font-family:'Satoshi',sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.vbg{position:fixed;inset:0;z-index:0;background:linear-gradient(135deg,#4f46e5,#7c3aed,#f59e0b,#db2777);background-size:400% 400%;animation:g 15s ease infinite;opacity:.12}
+@keyframes g{0%,100%{background-position:0 50%}50%{background-position:100% 50%}}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none}
+.o1{width:350px;height:350px;background:rgba(79,70,229,.2);top:-80px;left:-80px}
+.o2{width:300px;height:300px;background:rgba(219,39,119,.15);bottom:-60px;right:-60px}
+.card{position:relative;z-index:10;width:100%;max-width:440px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:36px;backdrop-filter:blur(40px);animation:up .6s var(--ease)}
+@keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.licon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center}
+.licon svg{width:16px;height:16px;color:#fff}
+.lname{font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1rem;letter-spacing:-.04em}
+.file-icon{font-size:3rem;margin-bottom:12px}
+.fname{font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1.4rem;letter-spacing:-.04em;margin-bottom:6px;word-break:break-all}
+.fmeta{font-size:.78rem;color:rgba(255,255,255,.4);margin-bottom:24px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:.7rem;font-weight:700;background:rgba(79,70,229,.2);border:1px solid rgba(79,70,229,.3);color:#a5b4fc;margin-bottom:16px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:9999px;font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:.95rem;cursor:pointer;border:none;transition:all .2s var(--ease);letter-spacing:-.02em}
+.btn-primary{background:#fff;color:#050505}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.btn-open{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.15);margin-top:10px}
+.btn-open:hover{background:rgba(255,255,255,.15)}
+.divider{height:1px;background:rgba(255,255,255,.08);margin:20px 0}
+/* Password gate */
+.pw-label{font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:7px}
+.pw-input{width:100%;padding:11px 14px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.07);color:#fff;font-size:.9rem;font-family:'Satoshi',sans-serif;outline:none;margin-bottom:12px;transition:border-color .2s}
+.pw-input:focus{border-color:rgba(79,70,229,.5)}
+.pw-error{color:#fca5a5;font-size:.78rem;margin-bottom:10px;display:none}
+.footer{position:relative;z-index:10;margin-top:20px;font-size:.72rem;color:rgba(255,255,255,.2);text-align:center}
+.footer a{color:rgba(255,255,255,.3);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="vbg"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+
+<div class="card" id="card">
+  <div class="logo">
+    <div class="licon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+      </svg>
+    </div>
+    <span class="lname">TaskNexus</span>
+  </div>
+  <div id="content">Loading…</div>
+</div>
+
+<p class="footer">Shared via <a href="index.html">TaskNexus</a> · File hosted on <span id="svc">cloud</span></p>
+
+<script>
+function h(s){let v=2166136261>>>0;for(let i=0;i<s.length;i++){v^=s.charCodeAt(i);v=Math.imul(v,16777619)>>>0;}return v.toString(16);}
+function icon(name){
+  const ext=(name.split('.').pop()||'').toLowerCase();
+  if(['jpg','jpeg','png','gif','webp','svg','bmp'].includes(ext)) return '🖼';
+  if(['mp4','mov','avi','mkv','webm'].includes(ext)) return '🎬';
+  if(['mp3','wav','ogg','flac','m4a'].includes(ext)) return '🎵';
+  if(ext==='pdf') return '📄';
+  if(['zip','rar','7z','tar','gz'].includes(ext)) return '📦';
+  if(['doc','docx'].includes(ext)) return '📝';
+  if(['xls','xlsx'].includes(ext)) return '📊';
+  if(['ppt','pptx'].includes(ext)) return '📊';
+  return '📎';
+}
+
+const params=new URLSearchParams(window.location.hash.slice(1));
+const url =params.get('url')||'';
+const pw  =params.get('pw')||'';
+const name=decodeURIComponent(params.get('name')||'Shared File');
+const svc =params.get('svc')||'cloud';
+document.getElementById('svc').textContent=svc;
+
+const content=document.getElementById('content');
+
+if(!url){
+  content.innerHTML='<p style="color:rgba(255,255,255,.4);text-align:center">Invalid share link.</p>';
+} else if(pw){
+  // Password protected
+  content.innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2.5rem;margin-bottom:8px">🔒</div>
+      <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1.3rem;letter-spacing:-.04em;margin-bottom:4px">Protected File</div>
+      <div style="font-size:.8rem;color:rgba(255,255,255,.4)">${name}</div>
+    </div>
+    <div class="pw-label">Enter Password</div>
+    <input class="pw-input" id="pw-inp" type="password" placeholder="••••••••" autofocus/>
+    <div class="pw-error" id="pw-err">Incorrect password. Try again.</div>
+    <button class="btn btn-primary" id="btn-unlock">Unlock File</button>`;
+
+  function tryUnlock(){
+    const entered=document.getElementById('pw-inp').value;
+    if(h(entered)===pw){
+      showFile();
+    } else {
+      const err=document.getElementById('pw-err');
+      err.style.display='block';
+      document.getElementById('pw-inp').style.borderColor='rgba(239,68,68,.6)';
+    }
+  }
+  document.getElementById('btn-unlock').onclick=tryUnlock;
+  document.getElementById('pw-inp').onkeydown=e=>{if(e.key==='Enter')tryUnlock();};
+} else {
+  showFile();
+}
+
+function showFile(){
+  const ext=(name.split('.').pop()||'').toUpperCase();
+  content.innerHTML=`
+    <div style="text-align:center">
+      <div class="file-icon">${icon(name)}</div>
+      <div class="fname">${name}</div>
+      <div class="fmeta">${ext} file · Tap to download</div>
+      <div class="badge">✓ Verified Share</div>
+    </div>
+    <button class="btn btn-primary" onclick="window.open('${url}','_blank')">⬇ Download File</button>
+    <button class="btn btn-open"   onclick="window.location.href='${url}'">Open Directly ↗</button>
+    <div class="divider"></div>
+    <div style="font-size:.72rem;color:rgba(255,255,255,.3);text-align:center">Shared via TaskNexus QR Generator</div>`;
+}
+</script>
+</body>
+</html>
