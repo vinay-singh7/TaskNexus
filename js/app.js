@@ -2,7 +2,7 @@
 const TOOL_NAMES = {
   dashboard:'Dashboard', notes:'Notes', todo:'To-Do', reminders:'Reminders', timer:'Timer',
   budget:'Budget Tracker', quicklinks:'Quick Links', calculator:'Calculator',
-  converter:'Unit Converter', qrcode:'QR Generator', imagetools:'Image Tools',
+  converter:'Unit Converter', qrcode:'QR Generator',
   texttools:'Text Tools', devtools:'Dev Tools', datatesting:'Data Testing', rsstools:'RSS Feeds',
   generators:'Generators', seo:'SEO Tools', datetime:'Date & Time', network:'Network Tools', pdftools:'PDF Tools',
   codeeditor: 'Code Editor', aigen: 'AI Image Generator'

@@ -1,5 +1,5 @@
 /* ============================================================
-   TASKNEXUS — AI IMAGE GENERATOR (ModelsLab Advanced)
+   TASKNEXUS — AI IMAGE GENERATOR (NVIDIA Flux-1-Dev)
    ============================================================ */
 
 const AIGen = (() => {
@@ -10,64 +10,25 @@ const AIGen = (() => {
     panel.innerHTML = `
       <div class="panel-header">
         <h2 class="panel-title">AI Image Generator</h2>
-        <p class="panel-desc">Create high-end visuals with advanced ModelsLab models like Flux-Klein and Qwen.</p>
+        <p class="panel-desc">Powered by NVIDIA NIM — High-fidelity image generation using the Flux-1-Dev model.</p>
       </div>
 
       <div class="card">
         <div class="form-group">
           <label class="form-label">Prompt</label>
-          <textarea id="ai-prompt" class="form-textarea" placeholder="e.g. high-end product photography of a luxury watch on a dark reflective surface..."></textarea>
+          <textarea id="ai-prompt" class="form-textarea" placeholder="e.g. high-end product photography of a luxury watch on a dark reflective surface, dramatic lighting, ultra-realistic detail"></textarea>
         </div>
 
         <div class="grid-2">
           <div class="form-group">
-            <label class="form-label">Model</label>
-            <select id="ai-model" class="form-select">
-              <option value="qwen" selected>Qwen (Product/Photo)</option>
-              <option value="flux-klein">Flux-Klein (Creative/Art)</option>
-              <option value="midjourney">Midjourney v6</option>
-              <option value="stable-diffusion-xl">SDXL</option>
+            <label class="form-label">Steps (1-50)</label>
+            <input type="number" id="ai-steps" class="form-input" value="50" min="1" max="50">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mode</label>
+            <select id="ai-mode" class="form-select">
+              <option value="base" selected>Base</option>
             </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Samples (1-2)</label>
-            <input type="number" id="ai-samples" class="form-input" value="1" min="1" max="2">
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Width</label>
-            <select id="ai-width" class="form-select">
-              <option value="512">512</option>
-              <option value="768">768</option>
-              <option value="1024">1024</option>
-              <option value="1280">1280</option>
-              <option value="1488">1488</option>
-              <option value="2024" selected>2024</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Height</label>
-            <select id="ai-height" class="form-select">
-              <option value="512">512</option>
-              <option value="768">768</option>
-              <option value="1024">1024</option>
-              <option value="1280">1280</option>
-              <option value="1488">1488</option>
-              <option value="2024" selected>2024</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="grid-2">
-          <div class="form-group">
-            <label class="form-label">Inference Steps</label>
-            <input type="number" id="ai-steps" class="form-input" value="20" min="1" max="50">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Guidance Scale</label>
-            <input type="number" id="ai-guidance" class="form-input" value="7.5" step="0.5" min="1" max="20">
           </div>
         </div>
 
@@ -81,8 +42,8 @@ const AIGen = (() => {
           <div class="panel-header" style="margin-bottom: 16px;">
             <h3 class="panel-title" style="font-size: 1.2rem;">Generated Result</h3>
           </div>
-          <div id="ai-image-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
-            <!-- Images will appear here -->
+          <div id="ai-image-container" style="display: flex; justify-content: center; align-items: center; min-height: 300px;">
+            <!-- Image will appear here -->
           </div>
         </div>
       </div>
@@ -95,21 +56,17 @@ const AIGen = (() => {
     if (isGenerating) return;
 
     const prompt = document.getElementById('ai-prompt').value.trim();
-    const model = document.getElementById('ai-model').value;
-    const width = document.getElementById('ai-width').value;
-    const height = document.getElementById('ai-height').value;
-    const samples = document.getElementById('ai-samples').value;
     const steps = document.getElementById('ai-steps').value;
-    const guidance = document.getElementById('ai-guidance').value;
-    const apiKey = window.ENV.MODELSLAB_API_KEY;
+    const mode = document.getElementById('ai-mode').value;
+    const apiKey = window.ENV.MODELSLAB_API_KEY; // Using the key variable for NVIDIA key
 
     if (!prompt) {
       toast('Please enter a prompt.', 'error');
       return;
     }
 
-    if (!apiKey || apiKey === 'your_modelslab_api_key_here') {
-      toast('ModelsLab API Key is missing. Please set it in config.js.', 'error');
+    if (!apiKey || apiKey.startsWith('your_')) {
+      toast('NVIDIA API Key is missing. Please set it in config.js.', 'error');
       return;
     }
 
@@ -120,48 +77,46 @@ const AIGen = (() => {
     container.innerHTML = '';
 
     try {
-      const response = await fetch("https://modelslab.com/api/v6/images/text2img", {
+      // NVIDIA NIM Endpoint for Flux-1-Dev
+      const invoke_url = "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux-1-dev";
+      
+      const response = await fetch(invoke_url, {
         method: "POST",
         headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Accept": "application/json",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "key": apiKey,
-          "model_id": model,
           "prompt": prompt,
-          "width": width,
-          "height": height,
-          "samples": samples,
-          "num_inference_steps": steps,
-          "guidance_scale": guidance
+          "mode": mode,
+          "steps": parseInt(steps),
+          "seed": Math.floor(Math.random() * 1000000)
         })
       });
 
+      if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.message || response.statusText);
+      }
+
       const data = await response.json();
 
-      if (data.status === 'success' || data.status === 'processing') {
+      if (data.artifacts && data.artifacts.length > 0) {
         resultArea.style.display = 'block';
+        const base64Data = data.artifacts[0].base64;
+        const imgUrl = `data:image/png;base64,${base64Data}`;
         
-        if (data.output && data.output.length > 0) {
-          data.output.forEach(url => {
-            const imgWrapper = document.createElement('div');
-            imgWrapper.style.position = 'relative';
-            imgWrapper.innerHTML = `
-              <img src="${url}" style="width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);" />
-              <a href="${url}" download="generated-image.png" target="_blank" class="btn btn-secondary btn-sm btn-pill" style="position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);">
-                Download
-              </a>
-            `;
-            container.appendChild(imgWrapper);
-          });
-        } else if (data.status === 'processing') {
-          container.innerHTML = `<p class="panel-desc">Image is being generated. This might take a minute. Please check back shortly.</p>`;
-          if (data.fetch_result) {
-              pollForResult(data.fetch_result);
-          }
-        }
+        container.innerHTML = `
+          <div style="position: relative; width: 100%; max-width: 800px;">
+            <img src="${imgUrl}" style="width: 100%; border-radius: 12px; box-shadow: var(--shadow-xl);" />
+            <a href="${imgUrl}" download="tasknexus-ai-gen.png" class="btn btn-secondary btn-sm btn-pill" style="position: absolute; bottom: 16px; right: 16px; background: rgba(255,255,255,0.9); backdrop-filter: blur(8px); box-shadow: var(--shadow-lg);">
+              Download Image
+            </a>
+          </div>
+        `;
       } else {
-        throw new Error(data.message || 'Generation failed');
+        throw new Error('No image artifacts returned from API.');
       }
     } catch (err) {
       console.error(err);
@@ -171,54 +126,12 @@ const AIGen = (() => {
     }
   }
 
-  async function pollForResult(fetchUrl) {
-      const container = document.getElementById('ai-image-container');
-      let attempts = 0;
-      const maxAttempts = 30; // Increased for higher resolution
-      
-      const interval = setInterval(async () => {
-          attempts++;
-          if (attempts > maxAttempts) {
-              clearInterval(interval);
-              container.innerHTML = `<p class="panel-desc">Generation timed out. Please check your ModelsLab dashboard.</p>`;
-              return;
-          }
-          
-          try {
-              const res = await fetch(fetchUrl, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ key: window.ENV.MODELSLAB_API_KEY })
-              });
-              const data = await res.json();
-              
-              if (data.status === 'success' && data.output) {
-                  clearInterval(interval);
-                  container.innerHTML = '';
-                  data.output.forEach(url => {
-                      const imgWrapper = document.createElement('div');
-                      imgWrapper.style.position = 'relative';
-                      imgWrapper.innerHTML = `
-                        <img src="${url}" style="width: 100%; border-radius: 12px; box-shadow: var(--shadow-md);" />
-                        <a href="${url}" download="generated-image.png" target="_blank" class="btn btn-secondary btn-sm btn-pill" style="position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.8); backdrop-filter: blur(4px);">
-                          Download
-                        </a>
-                      `;
-                      container.appendChild(imgWrapper);
-                  });
-              }
-          } catch (e) {
-              console.error("Polling error:", e);
-          }
-      }, 5000);
-  }
-
   function setLoading(loading) {
     isGenerating = loading;
     const btn = document.getElementById('ai-generate-btn');
     if (loading) {
       btn.disabled = true;
-      btn.innerHTML = `<span class="btn-icon">⏳</span> Generating...`;
+      btn.innerHTML = `<span class="btn-icon">⏳</span> Processing on NVIDIA GPUs...`;
     } else {
       btn.disabled = false;
       btn.innerHTML = `<span class="btn-icon">✨</span> Generate Image`;
