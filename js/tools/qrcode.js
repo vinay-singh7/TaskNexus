@@ -186,6 +186,16 @@
       <div id="fs-info" style="margin-top:8px"></div>
       <div id="fs-progress" style="height:4px;background:rgba(255,255,255,.06);border-radius:4px;margin-top:8px;overflow:hidden;display:none">
         <div id="fs-bar" style="height:100%;background:linear-gradient(90deg,var(--primary),var(--accent));width:0%;transition:width .3s"></div>
+      </div>
+      <div style="margin-top:12px;background:rgba(255,255,255,.03);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,.05)">
+        <label class="form-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0">
+          <input type="checkbox" id="fs-app-friendly" />
+          <span style="font-size:.8rem">Use TaskNexus Download Page</span>
+        </label>
+        <div style="font-size:.68rem;color:var(--text-3);margin-top:4px;line-height:1.4">
+          By default, the QR links directly to the file so <b>any</b> scanner can download it.<br/>
+          Check this to wrap it in a beautiful download UI (forces ON if password-protected).
+        </div>
       </div>`;
 
 
@@ -255,7 +265,7 @@
     const btn=document.getElementById('btn-gen');
     const prog=document.getElementById('fs-progress');
     const bar=document.getElementById('fs-bar');
-    btn.disabled=true; btn.textContent='<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle"><path d="M2 12h20"></path><path d="M12 2v20"></path><path d="M4 4h16v16H4z"></path></svg> Uploading…';
+    btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" style="vertical-align:middle"><path d="M2 12h20"></path><path d="M12 2v20"></path><path d="M4 4h16v16H4z"></path></svg> Uploading…';
     prog.style.display='block'; bar.style.width='15%';
     try{
       bar.style.width='50%';
@@ -280,7 +290,7 @@
         </div>`;
       toast('Paste a link instead — auto-upload blocked','warning',5000);
     }finally{
-      btn.disabled=false; btn.textContent='☁️ Upload File & Generate QR';
+      btn.disabled=false; btn.innerHTML='☁️ Upload File & Generate QR';
       setTimeout(()=>{ prog.style.display='none'; bar.style.width='0%'; },800);
     }
   }
@@ -289,6 +299,16 @@
     const pwOn=document.getElementById('qr-pw-on')?.checked;
     const pwVal=document.getElementById('qr-pw')?.value.trim();
     const pwHash=(pwOn&&pwVal)?hashStr(pwVal):'';
+    const appFriendly=document.getElementById('fs-app-friendly')?.checked || (pwOn && pwVal);
+    
+    const size=v('qr-size')||'250',ecc=v('qr-ecc')||'M';
+    const fg=document.getElementById('qr-fg').value,bg=document.getElementById('qr-bg').value;
+
+    if(!appFriendly) {
+      showQRPreview(qrUrl(fileUrl,size,ecc,fg,bg),size,fileUrl,false);
+      return;
+    }
+
     const base=window.location.href.split('#')[0].replace(/\/[^/]*$/,'/');
     const sp=new URLSearchParams();
     sp.set('url',fileUrl);
@@ -296,8 +316,6 @@
     if(svc) sp.set('svc',svc);
     if(pwHash) sp.set('pw',pwHash);
     const sharePage=base+'share.html#'+sp.toString();
-    const size=v('qr-size')||'250',ecc=v('qr-ecc')||'M';
-    const fg=document.getElementById('qr-fg').value,bg=document.getElementById('qr-bg').value;
     showQRPreview(qrUrl(sharePage,size,ecc,fg,bg),size,sharePage,true,fileName||fileUrl,svc,pwOn&&pwVal);
   }
 

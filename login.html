@@ -79,7 +79,7 @@
   </script>
   <script src="config.js"></script>
   <script>
-    document.write(`<script crossorigin="anonymous" data-clerk-publishable-key="${window.ENV.CLERK_PUBLISHABLE_KEY}" src="${window.ENV.CLERK_JS_URL}" type="text/javascript"><\\/script>`);
+    document.write('<script crossorigin="anonymous" data-clerk-publishable-key="' + window.ENV.CLERK_PUBLISHABLE_KEY + '" src="' + window.ENV.CLERK_JS_URL + '" type="text/javascript"><' + '/script>');
   </script>
 </head>
 <body>
