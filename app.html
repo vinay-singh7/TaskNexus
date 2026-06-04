@@ -78,6 +78,7 @@
       <div class="nav-group-label">Tools</div>
       <button class="nav-item" data-tool="imagetools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></span>Image Tools</button>
       <button class="nav-item" data-tool="aigen"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></span>AI Image Gen <span class="badge badge-indigo" style="font-size:9px;margin-left:auto">New</span></button>
+      <button class="nav-item" data-tool="signature"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M3 17.5C5 17 7 13 9 13s2 3 4 3 3-6 5-6 2 2 3 2"></path><path d="M3 21h18"></path></svg></span>Signature</button>
       <button class="nav-item" data-tool="texttools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg></span>Text Tools</button>
       <button class="nav-item" data-tool="devtools"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg></span>Dev Tools</button>
       <button class="nav-item" data-tool="datatesting"><span class="nav-icon"><svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M10 2v7.31"></path><path d="M14 9.3V1.99"></path><path d="M8.5 2h7"></path><path d="M14 9.3a6.5 6.5 0 1 1-4 0"></path><line x1="5.52" y1="16" x2="18.48" y2="16"></line></svg></span>Data Testing</button>
@@ -135,6 +136,8 @@
     <div class="tool-panel" id="panel-qrcode"></div>
     <!-- IMAGETOOLS -->
     <div class="tool-panel" id="panel-imagetools"></div>
+    <!-- SIGNATURE -->
+    <div class="tool-panel" id="panel-signature"></div>
     <!-- TEXTTOOLS -->
     <div class="tool-panel" id="panel-texttools"></div>
     <!-- DEVTOOLS -->
@@ -176,6 +179,7 @@
 <script src="js/tools/converter.js"></script>
 <script src="js/tools/qrcode.js"></script>
 <script src="js/tools/imagetools.js"></script>
+<script src="js/tools/signature.js"></script>
 <script src="js/tools/texttools.js"></script>
 <script src="js/tools/devtools.js"></script>
 <script src="js/tools/datatesting.js"></script>
@@ -185,6 +189,8 @@
 <script src="js/tools/seo.js"></script>
 <script src="js/tools/network.js"></script>
 <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="js/tools/pdftools.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
 <script src="js/tools/codeeditor.js"></script>
