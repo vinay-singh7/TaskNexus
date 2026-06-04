@@ -183,7 +183,23 @@
     lbl.innerHTML=`
       <img src="${url}" style="max-height:80px;border-radius:8px;margin-bottom:8px;object-fit:contain"/>
       <div style="font-size:.84rem;color:var(--text-2);font-weight:600">${esc(loadedFile.name)}</div>
-      <div style="font-size:.72rem;color:var(--text-3)">${canvas.width}×${canvas.height}px · ${(loadedFile.size/1024).toFixed(1)}KB</div>`;
+      <div style="font-size:.72rem;color:var(--text-3)">${canvas.width}×${canvas.height}px · ${(loadedFile.size/1024).toFixed(1)}KB</div>
+      <div style="margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button type="button" class="btn btn-secondary btn-sm" id="img-change-btn">Change image</button>
+        <button type="button" class="btn btn-danger btn-sm" id="img-clear-btn">✕ Remove image</button>
+      </div>`;
+    const changeBtn=document.getElementById('img-change-btn');
+    const clearBtn=document.getElementById('img-clear-btn');
+    if(changeBtn) changeBtn.addEventListener('click', e=>{ e.stopPropagation(); document.getElementById('img-file-input').click(); });
+    if(clearBtn)  clearBtn.addEventListener('click',  e=>{ e.stopPropagation(); clearImage(); });
+  }
+
+  function clearImage(){
+    loadedFile=null; loadedImg=null; bgFg=null; lastBlob=null;
+    if(canvas){ ctx.clearRect(0,0,canvas.width,canvas.height); canvas.width=0; canvas.height=0; }
+    if(document.getElementById('img-file-input')) document.getElementById('img-file-input').value='';
+    render(); // rebuilds the tab with the empty dropzone + clears the result
+    toast('Image removed','default');
   }
 
   function loadImage(file){
@@ -218,33 +234,64 @@
     return new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(blob); });
   }
 
-  // Encode a canvas to a lossy format, tuning quality (and downscaling if needed)
-  // so the result stays at or under targetBytes. Returns { blob, quality, width, height }.
-  async function encodeToTarget(srcCanvas, fmt, targetBytes){
-    let work = srcCanvas;
-    for(let attempt=0; attempt<10; attempt++){
-      const minBlob = await canvasToBlob(work, fmt, 0.05);
-      if(minBlob.size > targetBytes && work.width > 16 && work.height > 16){
-        const scaled=document.createElement('canvas');
-        scaled.width  = Math.max(1, Math.round(work.width  * 0.85));
-        scaled.height = Math.max(1, Math.round(work.height * 0.85));
-        scaled.getContext('2d').drawImage(work,0,0,scaled.width,scaled.height);
-        work = scaled;
-        continue;
-      }
-      if(minBlob.size > targetBytes){
-        return { blob:minBlob, quality:0.05, width:work.width, height:work.height, hitLimit:true };
-      }
-      let lo=0.05, hi=1.0, best=minBlob, bestQ=0.05;
-      for(let i=0;i<8;i++){
-        const mid=(lo+hi)/2;
-        const b=await canvasToBlob(work, fmt, mid);
-        if(b.size<=targetBytes){ best=b; bestQ=mid; lo=mid; } else { hi=mid; }
-      }
-      return { blob:best, quality:bestQ, width:work.width, height:work.height };
+  // High-quality resize. Big reductions are done in halving steps to avoid the
+  // aliasing/pixelation a single low-quality drawImage produces.
+  function scaleCanvas(src, w, h){
+    w=Math.max(1,Math.round(w)); h=Math.max(1,Math.round(h));
+    let cur=src;
+    while(cur.width > w*2 || cur.height > h*2){
+      const nw=Math.max(w, Math.floor(cur.width/2));
+      const nh=Math.max(h, Math.floor(cur.height/2));
+      const tmp=document.createElement('canvas'); tmp.width=nw; tmp.height=nh;
+      const tctx=tmp.getContext('2d');
+      tctx.imageSmoothingEnabled=true; tctx.imageSmoothingQuality='high';
+      tctx.drawImage(cur,0,0,nw,nh);
+      cur=tmp;
     }
-    const fb=await canvasToBlob(work, fmt, 0.05);
-    return { blob:fb, quality:0.05, width:work.width, height:work.height, hitLimit:true };
+    const out=document.createElement('canvas'); out.width=w; out.height=h;
+    const octx=out.getContext('2d');
+    octx.imageSmoothingEnabled=true; octx.imageSmoothingQuality='high';
+    octx.drawImage(cur,0,0,w,h);
+    return out;
+  }
+
+  // Fit a canvas to a target file size while keeping it looking good.
+  // Strategy: hold quality HIGH and shrink resolution to fit (a sharp, slightly
+  // smaller image beats a full-res one with crushed JPEG quality). Only as a last
+  // resort (already tiny) do we lower quality. Returns { blob, width, height, hitLimit }.
+  async function encodeToTarget(srcCanvas, fmt, targetBytes){
+    // PNG is lossless — the only lever is resolution.
+    if(fmt === 'image/png'){
+      let work = srcCanvas;
+      let blob = await canvasToBlob(work, fmt);
+      while(blob.size > targetBytes && work.width > 24 && work.height > 24){
+        work = scaleCanvas(work, work.width*0.85, work.height*0.85);
+        blob = await canvasToBlob(work, fmt);
+      }
+      return { blob, width:work.width, height:work.height, hitLimit: blob.size > targetBytes };
+    }
+
+    const GOOD_Q = 0.82; // visually clean JPEG quality we try to preserve
+    let work = srcCanvas;
+
+    // Shrink resolution (high-quality steps) at GOOD_Q until it fits, or we're small.
+    let blob = await canvasToBlob(work, fmt, GOOD_Q);
+    while(blob.size > targetBytes && work.width > 32 && work.height > 32){
+      work = scaleCanvas(work, work.width*0.9, work.height*0.9);
+      blob = await canvasToBlob(work, fmt, GOOD_Q);
+    }
+
+    if(blob.size <= targetBytes){
+      // Headroom left → push quality up toward 1.0 at the current resolution.
+      let lo=GOOD_Q, hi=1.0, best=blob;
+      for(let i=0;i<6;i++){ const mid=(lo+hi)/2; const b=await canvasToBlob(work, fmt, mid); if(b.size<=targetBytes){ best=b; lo=mid; } else { hi=mid; } }
+      return { blob:best, width:work.width, height:work.height, hitLimit:false };
+    }
+
+    // Still too big even when small → lower quality as the last resort.
+    let lo=0.2, hi=GOOD_Q, best=await canvasToBlob(work, fmt, 0.2);
+    for(let i=0;i<7;i++){ const mid=(lo+hi)/2; const b=await canvasToBlob(work, fmt, mid); if(b.size<=targetBytes){ best=b; lo=mid; } else { hi=mid; } }
+    return { blob:best, width:work.width, height:work.height, hitLimit: best.size > targetBytes };
   }
 
   async function processAndDownload(op){
@@ -264,9 +311,7 @@
       }
     }
 
-    const out=document.createElement('canvas');
-    out.width=outW; out.height=outH;
-    out.getContext('2d').drawImage(canvas,0,0,outW,outH);
+    const out=scaleCanvas(canvas, outW, outH);
 
     const tEl=document.getElementById('target-kb');
     let targetKB=tEl ? parseFloat(tEl.value) : 0;
@@ -511,7 +556,9 @@
     const r=cropState.rect, work=cropState.work;
     const out=document.createElement('canvas');
     out.width=Math.max(1,Math.round(r.w)); out.height=Math.max(1,Math.round(r.h));
-    out.getContext('2d').drawImage(work, r.x, r.y, r.w, r.h, 0, 0, out.width, out.height);
+    const octx=out.getContext('2d');
+    octx.imageSmoothingEnabled=true; octx.imageSmoothingQuality='high';
+    octx.drawImage(work, r.x, r.y, r.w, r.h, 0, 0, out.width, out.height);
 
     const fmt=document.getElementById('crop-fmt').value;
     let targetKB=parseFloat(document.getElementById('crop-kb').value); if(!(targetKB>0)) targetKB=0;
@@ -612,8 +659,17 @@
   }
 
   // ── Remove / Blur Background (AI segmentation via @imgly/background-removal) ──
+  // NOTE: load from esm.sh — jsdelivr's "+esm" build mis-bundles the lodash
+  // dependency and throws "(0 , p.memoize) is not a function".
   async function loadImgly(){
-    if(!AI.imgly) AI.imgly = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm');
+    if(!AI.imgly){
+      try {
+        AI.imgly = await import('https://esm.sh/@imgly/background-removal@1.5.5');
+      } catch(e){
+        // fallback to a newer pinned version if 1.5.5 is unavailable
+        AI.imgly = await import('https://esm.sh/@imgly/background-removal@1.6.0');
+      }
+    }
     return AI.imgly;
   }
 
