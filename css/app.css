@@ -630,16 +630,36 @@ tr:nth-child(odd) td { background: var(--surface-2) !important; }
   .sidebar.open { left: 0; }
   
   .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 16px; }
-  .tool-canvas { padding: 16px; }
+  .tool-canvas { padding: 16px; overflow-x: hidden; }
   .topbar { padding: 0 16px; }
   .topbar-search { display: none; } /* Hide search on very small mobile to save space, or move to sidebar */
-  
+
   .app-shell { flex-direction: column; }
-  .main-area { width: 100%; }
+  .main-area { width: 100%; max-width: 100%; }
+
+  /* Tabs wrap instead of overflowing the screen */
+  .tabs { flex-wrap: wrap; width: 100%; }
+  .tab-btn { padding: 8px 12px; font-size: 0.8rem; }
+
+  /* Keep media & controls inside the viewport */
+  .tool-canvas img,
+  .tool-canvas canvas,
+  .tool-canvas video,
+  .tool-canvas svg { max-width: 100%; height: auto; }
+  .tool-canvas input,
+  .tool-canvas select,
+  .tool-canvas textarea { max-width: 100%; }
+  .card { padding: 18px; }
+
+  /* Generic data tables scroll horizontally rather than break layout */
+  .tool-canvas table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
 }
 
 @media (max-width: 480px) {
   .topbar-title { font-size: 0.95rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .user-chip span { display: none; } /* Hide name on tiny screens */
   .panel-title { font-size: 1.4rem; }
+  .tool-canvas { padding: 12px; }
+  .card { padding: 14px; }
+  .panel-header { margin-bottom: 16px; }
 }

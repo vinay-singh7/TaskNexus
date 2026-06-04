@@ -162,7 +162,7 @@
       </div>
 
       <style>
-        .sig-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+        .sig-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px; }
         .sig-card{ border:1px solid var(--border); border-radius:var(--radius-md); overflow:hidden; background:var(--surface); display:flex; flex-direction:column; }
         .sig-card-top{ display:flex; align-items:center; justify-content:space-between; padding:6px 8px; border-bottom:1px solid var(--border); gap:8px; }
         .sig-rotate{ display:flex; align-items:center; gap:4px; }
