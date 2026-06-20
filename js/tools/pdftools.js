@@ -13,14 +13,14 @@
       <!-- Combine PDFs & Images -->
       <div class="card" style="grid-column: 1 / -1">
         <h3 style="margin-bottom:8px;font-family:var(--font-display)">Combine to PDF</h3>
-        <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:12px">Add multiple PDFs and images (PNG/JPG) — they'll be combined into one PDF in the order listed below.</p>
+        <p style="font-size:0.85rem;color:var(--text-3);margin-bottom:12px">Add PDFs, images (PNG/JPG/WebP/GIF/BMP/SVG), Word docs (.docx) and text (.txt) — they'll be merged into one PDF in the order listed below.</p>
 
         <label for="pdf-combine-input" class="pdf-dropzone" id="pdf-dropzone">
           <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="1.8" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
           <span class="pdf-dropzone-title">Click to add files</span>
-          <span class="pdf-dropzone-sub">PDF, PNG or JPG · select multiple</span>
+          <span class="pdf-dropzone-sub">PDF · images · .docx · .txt — select multiple</span>
         </label>
-        <input type="file" id="pdf-combine-input" accept="application/pdf,image/png,image/jpeg" multiple style="display:none"/>
+        <input type="file" id="pdf-combine-input" accept="application/pdf,image/*,.docx,.txt" multiple style="display:none"/>
 
         <div class="pdf-file-list" id="pdf-file-list"></div>
 
@@ -208,7 +208,19 @@
   let combineFiles = []; // { id, file }
   let dragIndex = null;  // index of the row currently being dragged
 
-  const SUPPORTED = ['application/pdf', 'image/png', 'image/jpeg'];
+  const IMAGE_EXT = ['png','jpg','jpeg','webp','gif','bmp','svg'];
+  const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+  const extOf = name => (name.split('.').pop() || '').toLowerCase();
+
+  function fileCategory(file){
+    const ext = extOf(file.name), t = file.type;
+    if(t==='application/pdf' || ext==='pdf') return 'pdf';
+    if(ext==='docx' || t===DOCX_MIME) return 'docx';
+    if(ext==='doc' || t==='application/msword') return 'doc';
+    if(t==='text/plain' || ext==='txt') return 'txt';
+    if((t && t.startsWith('image/')) || IMAGE_EXT.includes(ext)) return 'image';
+    return null;
+  }
 
   function fmtSize(bytes){
     if(bytes < 1024) return bytes + ' B';
@@ -216,20 +228,23 @@
     return (bytes/(1024*1024)).toFixed(1) + ' MB';
   }
   function fileIcon(file){
-    if(file.type === 'application/pdf') return '📄';
-    return '🖼';
+    const c = fileCategory(file);
+    return c==='pdf' ? '📄' : c==='docx'||c==='doc' ? '📝' : c==='txt' ? '📃' : '🖼';
   }
   function fileKind(file){
-    if(file.type === 'application/pdf') return 'PDF';
-    if(file.type === 'image/png') return 'PNG image';
-    if(file.type === 'image/jpeg') return 'JPG image';
-    return 'File';
+    const c = fileCategory(file);
+    if(c==='pdf') return 'PDF';
+    if(c==='docx') return 'Word document';
+    if(c==='doc') return 'Word (.doc — convert to .docx)';
+    if(c==='txt') return 'Text file';
+    const ext = extOf(file.name).toUpperCase();
+    return (ext||'Image') + ' image';
   }
 
   function addFiles(fileSource){
     let added = 0, skipped = 0;
     Array.from(fileSource).forEach(f => {
-      if(!SUPPORTED.includes(f.type)){ skipped++; return; }
+      if(!fileCategory(f)){ skipped++; return; }
       combineFiles.push({ id: (window.uid ? uid() : String(Date.now()+Math.random())), file: f });
       added++;
     });
@@ -311,6 +326,114 @@
     URL.revokeObjectURL(url);
   }
 
+  // ── Multi-format → PDF helpers (used by Combine) ──
+  const _loadedScripts = {};
+  function loadScript(src){
+    if(_loadedScripts[src]) return _loadedScripts[src];
+    _loadedScripts[src] = new Promise((res, rej)=>{
+      const s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = ()=>rej(new Error('Failed to load '+src));
+      document.head.appendChild(s);
+    });
+    return _loadedScripts[src];
+  }
+
+  // Convert any browser-decodable image (webp/gif/bmp/svg/…) to PNG bytes
+  async function imageToPngBytes(file){
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((res, rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=()=>rej(new Error('decode failed')); i.src=url; });
+      const w = img.naturalWidth || 800, h = img.naturalHeight || 600;
+      const c = document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      const blob = await new Promise(r=>c.toBlob(r, 'image/png'));
+      return { bytes: await blob.arrayBuffer(), w, h };
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  // Lay plain text onto A4 pages
+  async function addTextToPdf(outPdf, text){
+    const { StandardFonts, rgb } = window.PDFLib;
+    const font = await outPdf.embedFont(StandardFonts.Helvetica);
+    const size=11, lh=size*1.45, margin=50, pw=595.28, ph=841.89, maxW=pw-margin*2;
+    const safe = (text||'').replace(/\t/g,'    ').replace(/[^\x0A\x0D\x20-\xFF]/g,'?');
+    let page = outPdf.addPage([pw, ph]); let y = ph - margin;
+    const para = safe.split(/\r?\n/);
+    for(const line of para){
+      const words = line.length ? line.split(' ') : [''];
+      let cur = '';
+      const flush = txt => {
+        if(y < margin){ page = outPdf.addPage([pw, ph]); y = ph - margin; }
+        page.drawText(txt, { x:margin, y, size, font, color:rgb(0,0,0) }); y -= lh;
+      };
+      for(const word of words){
+        const test = cur ? cur+' '+word : word;
+        if(font.widthOfTextAtSize(test, size) > maxW && cur){ flush(cur); cur = word; }
+        else cur = test;
+      }
+      flush(cur);
+    }
+  }
+
+  // Best-effort .docx → PDF pages (mammoth → HTML → html2canvas → image pages)
+  async function addDocxToPdf(outPdf, file){
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js');
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    const ab = await file.arrayBuffer();
+    const { value:html } = await window.mammoth.convertToHtml({ arrayBuffer: ab });
+    const PAGE_W = 794; // ~A4 width @96dpi
+    const box = document.createElement('div');
+    box.style.cssText = `position:fixed;left:-10000px;top:0;width:${PAGE_W}px;padding:48px;box-sizing:border-box;background:#fff;color:#000;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.5;`;
+    box.innerHTML = html || '<p></p>';
+    document.body.appendChild(box);
+    try {
+      const canvas = await window.html2canvas(box, { scale:2, backgroundColor:'#ffffff', useCORS:true });
+      const sliceH = Math.round(PAGE_W * (297/210) * (canvas.width/PAGE_W)); // A4-tall slice in canvas px
+      for(let y=0; y<canvas.height; y+=sliceH){
+        const h = Math.min(sliceH, canvas.height - y);
+        const slice = document.createElement('canvas'); slice.width=canvas.width; slice.height=h;
+        slice.getContext('2d').drawImage(canvas, 0, y, canvas.width, h, 0, 0, canvas.width, h);
+        const blob = await new Promise(r=>slice.toBlob(r, 'image/jpeg', 0.92));
+        const img = await outPdf.embedJpg(await blob.arrayBuffer());
+        const pw = 595.28, ppage = pw * (h/canvas.width);
+        const page = outPdf.addPage([pw, ppage]);
+        page.drawImage(img, { x:0, y:0, width:pw, height:ppage });
+      }
+    } finally { document.body.removeChild(box); }
+  }
+
+  // Append a single file (any supported type) to the output PDF, in place
+  async function addFileToPdf(outPdf, file){
+    const { PDFDocument } = window.PDFLib;
+    const cat = fileCategory(file);
+    if(cat==='pdf'){
+      const src = await PDFDocument.load(await file.arrayBuffer());
+      const pages = await outPdf.copyPages(src, src.getPageIndices());
+      pages.forEach(p => outPdf.addPage(p));
+    } else if(cat==='image'){
+      const ext = extOf(file.name), t = file.type;
+      if(t==='image/jpeg' || ext==='jpg' || ext==='jpeg'){
+        const img = await outPdf.embedJpg(await file.arrayBuffer());
+        const page = outPdf.addPage([img.width, img.height]); page.drawImage(img, { x:0,y:0,width:img.width,height:img.height });
+      } else if(t==='image/png' || ext==='png'){
+        const img = await outPdf.embedPng(await file.arrayBuffer());
+        const page = outPdf.addPage([img.width, img.height]); page.drawImage(img, { x:0,y:0,width:img.width,height:img.height });
+      } else {
+        const png = await imageToPngBytes(file); // webp/gif/bmp/svg → png
+        const img = await outPdf.embedPng(png.bytes);
+        const page = outPdf.addPage([png.w, png.h]); page.drawImage(img, { x:0,y:0,width:png.w,height:png.h });
+      }
+    } else if(cat==='txt'){
+      await addTextToPdf(outPdf, await file.text());
+    } else if(cat==='docx'){
+      await addDocxToPdf(outPdf, file);
+    } else if(cat==='doc'){
+      throw new Error('Old .doc not supported — save as .docx');
+    } else {
+      throw new Error('Unsupported file');
+    }
+  }
+
   // --- COMBINE (PDFs + Images) ---
   const combineInput = document.getElementById('pdf-combine-input');
   const dropzone = document.getElementById('pdf-dropzone');
@@ -362,24 +485,25 @@
       const { PDFDocument } = window.PDFLib;
       const outPdf = await PDFDocument.create();
 
-      for (const { file } of combineFiles) {
-        const arrayBuffer = await file.arrayBuffer();
-
-        if (file.type === 'application/pdf') {
-          const src = await PDFDocument.load(arrayBuffer);
-          const pages = await outPdf.copyPages(src, src.getPageIndices());
-          pages.forEach(p => outPdf.addPage(p));
-        } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
-          const image = file.type === 'image/jpeg'
-            ? await outPdf.embedJpg(arrayBuffer)
-            : await outPdf.embedPng(arrayBuffer);
-          const page = outPdf.addPage([image.width, image.height]);
-          page.drawImage(image, { x: 0, y: 0, width: image.width, height: image.height });
+      let skipped = 0;
+      for(let n=0; n<combineFiles.length; n++){
+        const file = combineFiles[n].file;
+        status.textContent = `Adding ${n+1}/${combineFiles.length}: ${file.name}`;
+        try {
+          await addFileToPdf(outPdf, file);
+        } catch(e){
+          console.error('Failed to add', file.name, e);
+          toast(`Couldn't add ${file.name}`, 'warning');
+          skipped++;
         }
       }
+      status.textContent = 'Finalizing…';
+
+      if(outPdf.getPageCount() === 0){ toast('Nothing could be combined', 'error'); return; }
 
       let pdfBytes = await outPdf.save();
-      let info = `${(pdfBytes.length/1024).toFixed(1)}KB · ${combineFiles.length} file(s) combined`;
+      const okCount = combineFiles.length - skipped;
+      let info = `${(pdfBytes.length/1024).toFixed(1)}KB · ${okCount} file(s) combined`;
 
       if(compress){
         let targetKB = parseFloat(document.getElementById('combine-target-kb').value);
