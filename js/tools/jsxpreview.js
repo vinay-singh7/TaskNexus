@@ -94,8 +94,14 @@
     if(!babelLoading){
       babelLoading = new Promise((res, rej)=>{
         const s=document.createElement('script');
-        s.src='https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.10/babel.min.js';
-        s.onload=()=>res(window.Babel); s.onerror=()=>rej(new Error('Failed to load the JSX compiler (need internet).'));
+        s.src='https://unpkg.com/@babel/standalone/babel.min.js';
+        s.async=true;
+        s.onload=()=>{
+          // @babel/standalone exposes window.Babel
+          if(!window.Babel) return rej(new Error('Babel failed to load properly.'));
+          res(window.Babel);
+        };
+        s.onerror=()=>rej(new Error('Failed to load Babel. Check your internet connection.'));
         document.head.appendChild(s);
       });
     }
@@ -113,11 +119,24 @@
   }
 
   async function compile(){
-    const Babel = await loadBabel();
-    const presets = [['react', { runtime:'classic' }]];
-    if(isTs) presets.unshift(['typescript', { isTSX:true, allExtensions:true }]);
-    const out = Babel.transform(preprocess(codeEl.value), { presets, filename: isTs?'component.tsx':'component.jsx' });
-    return out.code || '';
+    let Babel;
+    try {
+      Babel = await loadBabel();
+    } catch(e){
+      throw new Error('Babel compiler failed to load: ' + e.message);
+    }
+    if(!Babel || typeof Babel.transform !== 'function'){
+      throw new Error('Babel loaded but has no transform method. Library may have changed.');
+    }
+    try {
+      const presets = [['react', { runtime:'classic' }]];
+      if(isTs) presets.unshift(['typescript', { isTSX:true, allExtensions:true }]);
+      const out = Babel.transform(preprocess(codeEl.value), { presets, filename: isTs?'component.tsx':'component.jsx' });
+      if(!out || !out.code) throw new Error('Babel transform returned empty code.');
+      return out.code;
+    } catch(e){
+      throw new Error((e.message||'Transform failed') + (e.loc ? ` at line ${e.loc.line}:${e.loc.column}` : ''));
+    }
   }
 
   function buildHtml(compiled){
