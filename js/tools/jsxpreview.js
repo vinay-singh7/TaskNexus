@@ -131,13 +131,11 @@
     try {
       const code = preprocess(codeEl.value);
       const out = sucrase.transform(code, {
-        transforms: ['jsx', isTs ? 'typescript' : null].filter(Boolean),
-        jsxRuntime: 'classic' // compatible with our manual React global injection
+        transforms: ['jsx', isTs ? 'typescript' : null].filter(Boolean)
       });
       if(!out || !out.code) throw new Error('Transform returned empty code.');
       return out.code;
     } catch(e){
-      // Sucrase error format: "message (line:column)"
       throw new Error((e.message||'Transform failed'));
     }
   }
