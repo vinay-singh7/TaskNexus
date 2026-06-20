@@ -7,8 +7,8 @@
   const el = document.getElementById('panel-jsxpreview');
   if(!el) return;
 
-  let isTs = false; // set when a .tsx/.ts file is loaded
-  let sucraseLoading = null;
+  let isTs = false;
+  let tsLoading = null;
 
   const SAMPLE = `export default function App() {
   const [count, setCount] = React.useState(0);
@@ -89,23 +89,22 @@
   function clearError(){ errEl.style.display='none'; errEl.textContent=''; }
   function showError(msg){ errEl.textContent = String(msg); errEl.style.display='block'; status(''); }
 
-  function loadSucrase(){
-    if(window.sucrase) return Promise.resolve(window.sucrase);
-    if(!sucraseLoading){
-      sucraseLoading = new Promise((res, rej)=>{
+  function loadTypeScript(){
+    if(window.ts) return Promise.resolve(window.ts);
+    if(!tsLoading){
+      tsLoading = new Promise((res, rej)=>{
         const s=document.createElement('script');
-        // Sucrase: lightweight JSX/TS compiler. Use unpkg (more reliable)
-        s.src='https://unpkg.com/sucrase@3/dist/sucrase.umd.js';
+        s.src='https://cdn.jsdelivr.net/npm/typescript@5/lib/typescript.js';
         s.async=true;
         s.onload=()=>{
-          if(!window.sucrase) return rej(new Error('Sucrase library loaded but did not initialize.'));
-          res(window.sucrase);
+          if(!window.ts) return rej(new Error('TypeScript failed to initialize.'));
+          res(window.ts);
         };
-        s.onerror=()=>rej(new Error('Failed to load compiler library from CDN.'));
+        s.onerror=()=>rej(new Error('Network error loading TypeScript.'));
         document.head.appendChild(s);
       });
     }
-    return sucraseLoading;
+    return tsLoading;
   }
 
   // Strip imports (React/ReactDOM are provided as globals) and normalise exports
@@ -119,24 +118,28 @@
   }
 
   async function compile(){
-    let sucrase;
+    let ts;
     try {
-      sucrase = await loadSucrase();
+      ts = await loadTypeScript();
     } catch(e){
       throw new Error('Compiler failed to load: ' + e.message);
     }
-    if(!sucrase || typeof sucrase.transform !== 'function'){
-      throw new Error('Compiler loaded but has no transform method.');
+    if(!ts || typeof ts.transpileModule !== 'function'){
+      throw new Error('Compiler unavailable.');
     }
     try {
       const code = preprocess(codeEl.value);
-      const out = sucrase.transform(code, {
-        transforms: ['jsx', isTs ? 'typescript' : null].filter(Boolean)
+      const result = ts.transpileModule(code, {
+        compilerOptions: {
+          jsx: ts.JsxEmit.React,
+          target: ts.ScriptTarget.ES2020,
+          module: ts.ModuleKind.ESNext
+        }
       });
-      if(!out || !out.code) throw new Error('Transform returned empty code.');
-      return out.code;
+      if(!result.outputText) throw new Error('Transpile returned empty.');
+      return result.outputText;
     } catch(e){
-      throw new Error((e.message||'Transform failed'));
+      throw new Error((e.message||'Compile failed'));
     }
   }
 
