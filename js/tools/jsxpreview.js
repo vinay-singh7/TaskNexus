@@ -94,14 +94,14 @@
     if(!sucraseLoading){
       sucraseLoading = new Promise((res, rej)=>{
         const s=document.createElement('script');
-        // Sucrase: lightweight, reliable in-browser JSX/TS compiler
-        s.src='https://cdn.jsdelivr.net/npm/sucrase@3/dist/sucrase.js';
+        // Sucrase: lightweight JSX/TS compiler. Use unpkg (more reliable)
+        s.src='https://unpkg.com/sucrase@3/dist/sucrase.umd.js';
         s.async=true;
         s.onload=()=>{
-          if(!window.sucrase) return rej(new Error('Sucrase failed to initialize.'));
+          if(!window.sucrase) return rej(new Error('Sucrase library loaded but did not initialize.'));
           res(window.sucrase);
         };
-        s.onerror=()=>rej(new Error('Failed to load compiler. Check your internet connection.'));
+        s.onerror=()=>rej(new Error('Failed to load compiler library from CDN.'));
         document.head.appendChild(s);
       });
     }
