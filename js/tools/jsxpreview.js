@@ -8,7 +8,7 @@
   if(!el) return;
 
   let isTs = false; // set when a .tsx/.ts file is loaded
-  let babelLoading = null;
+  let sucraseLoading = null;
 
   const SAMPLE = `export default function App() {
   const [count, setCount] = React.useState(0);
@@ -89,24 +89,23 @@
   function clearError(){ errEl.style.display='none'; errEl.textContent=''; }
   function showError(msg){ errEl.textContent = String(msg); errEl.style.display='block'; status(''); }
 
-  function loadBabel(){
-    if(window.Babel) return Promise.resolve(window.Babel);
-    if(!babelLoading){
-      babelLoading = new Promise((res, rej)=>{
+  function loadSucrase(){
+    if(window.sucrase) return Promise.resolve(window.sucrase);
+    if(!sucraseLoading){
+      sucraseLoading = new Promise((res, rej)=>{
         const s=document.createElement('script');
-        // Use jsDelivr with babel-standalone (the original package, most reliable)
-        s.src='https://cdn.jsdelivr.net/npm/babel-standalone@6/babel.min.js';
+        // Sucrase: lightweight, reliable in-browser JSX/TS compiler
+        s.src='https://cdn.jsdelivr.net/npm/sucrase@3/dist/sucrase.js';
         s.async=true;
         s.onload=()=>{
-          // babel-standalone exposes window.Babel
-          if(!window.Babel || !window.Babel.transform) return rej(new Error('Babel failed to initialize.'));
-          res(window.Babel);
+          if(!window.sucrase) return rej(new Error('Sucrase failed to initialize.'));
+          res(window.sucrase);
         };
-        s.onerror=()=>rej(new Error('Failed to load Babel (network issue). Check your internet connection.'));
+        s.onerror=()=>rej(new Error('Failed to load compiler. Check your internet connection.'));
         document.head.appendChild(s);
       });
     }
-    return babelLoading;
+    return sucraseLoading;
   }
 
   // Strip imports (React/ReactDOM are provided as globals) and normalise exports
@@ -120,27 +119,26 @@
   }
 
   async function compile(){
-    let Babel;
+    let sucrase;
     try {
-      Babel = await loadBabel();
+      sucrase = await loadSucrase();
     } catch(e){
-      throw new Error('Babel compiler failed to load: ' + e.message);
+      throw new Error('Compiler failed to load: ' + e.message);
     }
-    if(!Babel || typeof Babel.transform !== 'function'){
-      throw new Error('Babel loaded but has no transform method.');
+    if(!sucrase || typeof sucrase.transform !== 'function'){
+      throw new Error('Compiler loaded but has no transform method.');
     }
     try {
-      // babel-standalone v6 uses preset names without scope: 'react', 'es2015', etc.
-      const presets = ['react'];
-      const plugins = [];
-      // For TypeScript, we'd need the TypeScript preset, but v6 may not have it.
-      // Fallback: just treat .tsx as JSX with loose parsing
-      const out = Babel.transform(preprocess(codeEl.value), { presets, plugins });
-      if(!out || !out.code) throw new Error('Babel returned empty code.');
+      const code = preprocess(codeEl.value);
+      const out = sucrase.transform(code, {
+        transforms: ['jsx', isTs ? 'typescript' : null].filter(Boolean),
+        jsxRuntime: 'classic' // compatible with our manual React global injection
+      });
+      if(!out || !out.code) throw new Error('Transform returned empty code.');
       return out.code;
     } catch(e){
-      const line = e.loc ? ` line ${e.loc.line}:${e.loc.column}` : '';
-      throw new Error((e.message||'Transform failed') + line);
+      // Sucrase error format: "message (line:column)"
+      throw new Error((e.message||'Transform failed'));
     }
   }
 
